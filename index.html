@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background: #191919 !important;
+  }
+
+  canvas {
+    position: absolute;
+  }
+
+  #map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: black;
+    z-index: -1;
+    width: 100%;
+  }
+
+  #sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #808080c7;
+    width: 250px;
+    padding: 20px;
+  }
+
+  #tooltip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: white;
+    width: 250px;
+    padding: 20px;
+    display: none;
+  }
+
+  #fps-monitor {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: grey;
+    width: 125px;
+    padding: 20px;
+  }
+
+  #base {
+    z-index: 1;
+  }
+  #ports {
+    z-index: 2;
+  }
+</style>
+<link rel="stylesheet" href="/assets/spectre.min.css">
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h3>Filter ports</h3>
+      <input id="input-port-filter" type="text" placeholder="port name..."></input>
+    </div>
+    <div id="tooltip"></div>
+    <img id="map" src="/assets/map.svg"></img>
+    <canvas id="base-layer"></canvas>
+    <canvas id="ports-layer"></canvas>
+    <div id="fps-monitor">FPS <span id="fps-value">0</span></div>
+  </div>
+
+  <script src="/js/ports-layer.mjs" type="module"></script>
+  <script src="/js/store.mjs" type="module"></script>
+  <script type="module">
+      import { dpr, sizeCanvas, setMouseState } from './js/util.mjs'
+      import { canvas as baseCanvas } from './js/base-layer.mjs'
+      import { canvas as portCanvas, getPorts, renderPorts } from './js/ports-layer.mjs'
+      import { store } from './js/store.mjs'
+
+      [baseCanvas,portCanvas].forEach(sizeCanvas)
+     
+      window.onmousemove = function(e) {
+        setMouseState(e)
+      }
+
+      getPorts()
+        .then(_ => {
+          const { ports: { instances } } = store.getState()
+          renderPorts(instances)
+        })
+  
+  </script>
+</body>
+
+</html>

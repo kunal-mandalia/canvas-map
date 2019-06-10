@@ -1,0 +1,10 @@
+{
+  "name": "canvas-map",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Kunal Mandalia <kunal.v.mandalia@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npx serve ."
+  }
+}
