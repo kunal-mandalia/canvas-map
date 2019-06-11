@@ -27,15 +27,17 @@
     background: #808080c7;
     width: 250px;
     padding: 20px;
+    display: none;
   }
 
   #tooltip {
     position: absolute;
     top: 0;
     left: 0;
-    background: white;
-    width: 250px;
+    background: rgba(255, 255, 255, 0.80);
+    min-width: 150px;
     padding: 20px;
+    z-index: 5;
     display: none;
   }
 
@@ -62,7 +64,10 @@
       <h3>Filter ports</h3>
       <input id="input-port-filter" type="text" placeholder="port name..."></input>
     </div>
-    <div id="tooltip"></div>
+    <div id="tooltip">
+      <div id="tooltip-title"></div>
+      <div id="tooltip-body"></div>
+    </div>
     <img id="map" src="/assets/map.svg"></img>
     <canvas id="base-layer"></canvas>
     <canvas id="ports-layer"></canvas>
@@ -74,13 +79,14 @@
   <script type="module">
       import { dpr, sizeCanvas, setMouseState } from './js/util.mjs'
       import { canvas as baseCanvas } from './js/base-layer.mjs'
-      import { canvas as portCanvas, getPorts, renderPorts } from './js/ports-layer.mjs'
+      import { canvas as portCanvas, getPorts, renderPorts, setPortsTooltip } from './js/ports-layer.mjs'
       import { store } from './js/store.mjs'
 
       [baseCanvas,portCanvas].forEach(sizeCanvas)
      
       window.onmousemove = function(e) {
         setMouseState(e)
+        setPortsTooltip()
       }
 
       getPorts()
