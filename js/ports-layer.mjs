@@ -102,7 +102,6 @@ function setPortsTooltip() {
   const tooltipBody = document.getElementById('tooltip-body')
 
   if (mouse.isOnCanvas) {
-    // hovering over
     const port = store.getState().ports.instances.find(port => isCursorInPortRadius(mouse, port))
     if (port) {
       const [long, lat] = port.coordinates
