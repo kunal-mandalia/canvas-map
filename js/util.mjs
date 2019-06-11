@@ -1,5 +1,5 @@
 import { store } from './store.mjs'
- 
+
 const dpr = window.devicePixelRatio || 1
 
 function sizeCanvas(canvas) {
@@ -34,7 +34,7 @@ function setMouseState(e) {
   store.setState(() => {
     const x = e.x * dpr
     const y = e.y * dpr
-    const isOnCanvas = (e.x >= 0 && e.x <= window.innerWidth) && (e.y >= 0 && e.y <= window.innerHeight / 2)
+    const isOnCanvas = (e.x >= 0 && (e.x <= window.innerWidth )) && (e.y >= 0 && (e.y <= window.innerWidth / 2))
     return {
       mouse: {
         x,

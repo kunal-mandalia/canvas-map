@@ -1,5 +1,5 @@
 import { store } from './store.mjs'
-import { FPS } from './util.mjs'
+import { FPS, dpr } from './util.mjs'
 
 const fps = new FPS()
 
@@ -24,19 +24,20 @@ async function getPorts () {
         .map((port, index) => {
           const [long, lat] = port.coordinates
           const [x, y] = latLongToXY(lat, long)
-          return new Port(`port-${index}`, x, y, 3, port.name)
+          return new Port(`port-${index}`, x, y, 3, port.name, port.coordinates)
         })
     }
   })
 }
 
 class Port {
-  constructor(id, x, y, radius, name) {
+  constructor(id, x, y, radius, name, coordinates) {
     this.id = id
     this.x = x
     this.y = y
     this.radius = radius
     this.name = name
+    this.coordinates = coordinates
   }
 
   drawHover = () => {
@@ -86,9 +87,39 @@ function renderPorts() {
   window.requestAnimationFrame(draw)
 }
 
+function isCursorInPortRadius({x,y}, port) {
+  const bound = port.radius
+  return (x - port.x > -bound)
+    && (x - port.x <= bound)
+    && (y - port.y > -bound)
+    && (y - port.y <= bound)
+}
+
+function setPortsTooltip() {
+  const { mouse } = store.getState()
+  const tooltip = document.getElementById('tooltip')
+  const tooltipTitle = document.getElementById('tooltip-title')
+  const tooltipBody = document.getElementById('tooltip-body')
+
+  if (mouse.isOnCanvas) {
+    const port = store.getState().ports.instances.find(port => isCursorInPortRadius(mouse, port))
+    if (port) {
+      const [long, lat] = port.coordinates
+      tooltip.style.top = `${mouse.y / 2 }px`
+      tooltip.style.left = `${mouse.x / 2 }px`
+      tooltip.style.display = `block`
+      tooltipTitle.innerHTML = `${port.name}`
+      tooltipBody.innerHTML = `<small>${lat} ${long}</small>`
+    } else {
+      tooltip.style.display = `none`
+    }
+  }
+}
+
 export {
   canvas,
   ctx,
   getPorts,
-  renderPorts
+  renderPorts,
+  setPortsTooltip
 }
