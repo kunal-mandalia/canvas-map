@@ -1,14 +1,13 @@
 import { store } from './store.mjs'
-
-const dpr = window.devicePixelRatio || 1
+import { DPR, RATIO } from './constants.mjs'
 
 function sizeCanvas(canvas) {
   canvas.style.width = `${window.innerWidth}px`
   canvas.style.height = `${window.innerWidth / 2}px`
   canvas.style.position = 'absolute'
   const rect = canvas.getBoundingClientRect()
-  canvas.width = rect.width * dpr
-  canvas.height = rect.height * dpr
+  canvas.width = rect.width * RATIO
+  canvas.height = rect.height * RATIO
   return canvas
 }
 
@@ -32,8 +31,8 @@ class FPS {
 
 function setMouseState(e) {
   store.setState(() => {
-    const x = e.x * dpr
-    const y = e.y * dpr
+    const x = e.x * DPR
+    const y = e.y * DPR
     const isOnCanvas = (e.x >= 0 && (e.x <= window.innerWidth )) && (e.y >= 0 && (e.y <= window.innerWidth / 2))
     return {
       mouse: {
@@ -46,7 +45,7 @@ function setMouseState(e) {
 }
 
 export {
-  dpr,
+  DPR,
   FPS,
   setMouseState,
   sizeCanvas

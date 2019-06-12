@@ -1,5 +1,6 @@
 import { store } from './store.mjs'
-import { FPS, dpr } from './util.mjs'
+import { FPS } from './util.mjs'
+import { DPR, RATIO } from './constants.mjs'
 
 const fps = new FPS()
 
@@ -24,7 +25,8 @@ async function getPorts () {
         .map((port, index) => {
           const [long, lat] = port.coordinates
           const [x, y] = latLongToXY(lat, long)
-          return new Port(`port-${index}`, x, y, 3, port.name, port.coordinates)
+          const radius = 2 * RATIO
+          return new Port(`port-${index}`, x, y, radius, port.name, port.coordinates)
         })
     }
   })
@@ -89,10 +91,12 @@ function renderPorts() {
 
 function isCursorInPortRadius({x,y}, port) {
   const bound = port.radius
-  return (x - port.x > -bound)
-    && (x - port.x <= bound)
-    && (y - port.y > -bound)
-    && (y - port.y <= bound)
+  const a = x * RATIO / DPR
+  const b = y * RATIO / DPR
+  return (a - port.x > -bound)
+    && (a - port.x <= bound)
+    && (b - port.y > -bound)
+    && (b - port.y <= bound)
 }
 
 function setPortsTooltip() {
@@ -105,8 +109,8 @@ function setPortsTooltip() {
     const port = store.getState().ports.instances.find(port => isCursorInPortRadius(mouse, port))
     if (port) {
       const [long, lat] = port.coordinates
-      tooltip.style.top = `${mouse.y / 2 }px`
-      tooltip.style.left = `${mouse.x / 2 }px`
+      tooltip.style.top = `${mouse.y / DPR }px`
+      tooltip.style.left = `${mouse.x / DPR }px`
       tooltip.style.display = `block`
       tooltipTitle.innerHTML = `${port.name}`
       tooltipBody.innerHTML = `<small>${lat} ${long}</small>`
@@ -116,10 +120,38 @@ function setPortsTooltip() {
   }
 }
 
+function togglePortsMenu() {
+  store.setState(prevState => {
+    const isExpanded = prevState.menu.ports.isExpanded
+    const menu = document.getElementById('menu')
+    const ports = document.getElementById('sidebar-ports')
+
+    if (isExpanded) {
+      menu.style.display = 'block'
+      ports.style.display = 'none'
+    } else {
+      menu.style.display = 'none'
+      ports.style.display = 'block'
+      ports.style.height = `${(window.innerWidth / 2) - 50}px`
+    }
+    
+    return {
+      menu: {
+        ...prevState.menu,
+        ports: {
+          ...prevState.menu.ports,
+          isExpanded: !isExpanded
+        }
+      }
+    }
+  })
+}
+
 export {
   canvas,
   ctx,
   getPorts,
   renderPorts,
-  setPortsTooltip
+  setPortsTooltip,
+  togglePortsMenu
 }
