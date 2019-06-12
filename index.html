@@ -128,7 +128,7 @@
   <script src="/js/ports-layer.mjs" type="module"></script>
   <script src="/js/store.mjs" type="module"></script>
   <script type="module">
-    import { sizeCanvas, setMouseState } from './js/util.mjs'
+    import { sizeCanvas, setMouseState, debounce } from './js/util.mjs'
     import { canvas as baseCanvas } from './js/base-layer.mjs'
     import {
       canvas as portCanvas,
@@ -152,6 +152,17 @@
     }
 
     menuPortsSearch.oninput = updatePortFilter
+
+    window.onresize = function(e) {
+      debounce.throttle(() => {
+        sizeCanvas(portCanvas)
+        getPorts()
+        .then(_ => {
+          const { ports: { instances } } = store.getState()
+          renderPorts(instances)
+        })
+      })
+    }
 
     window.onmousemove = function (e) {
       setMouseState(e)
