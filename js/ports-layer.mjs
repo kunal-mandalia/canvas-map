@@ -1,5 +1,5 @@
 import { store } from './store.mjs'
-import { FPS } from './util.mjs'
+import { FPS, clearCanvas } from './util.mjs'
 import { DPR, RATIO } from './constants.mjs'
 
 const fps = new FPS()
@@ -17,11 +17,15 @@ async function getPorts () {
   const rawPorts = await fetch("/assets/ports.json")
     .then(res => res.json())
 
-  store.setState({
+  store.setState(prevState => ({
     ports: {
       raw: rawPorts,
       instances: Object.values(rawPorts)
         .filter(port => port.coordinates)
+        .filter(port => {
+          const filter = prevState.menu.ports.filter ? prevState.menu.ports.filter.toLowerCase() : null
+          return filter ?  port.name.toLowerCase().includes(filter) : true
+        })
         .map((port, index) => {
           const [long, lat] = port.coordinates
           const [x, y] = latLongToXY(lat, long)
@@ -29,7 +33,7 @@ async function getPorts () {
           return new Port(`port-${index}`, x, y, radius, port.name, port.coordinates)
         })
     }
-  })
+  }))
 }
 
 class Port {
@@ -79,6 +83,7 @@ function drawFps() {
 }
 
 function draw() {
+  clearCanvas(canvas, ctx)
   const { ports: { instances } } = store.getState()
   instances.forEach(port => port.draw())
   drawFps()
@@ -147,11 +152,28 @@ function togglePortsMenu() {
   })
 }
 
+function updatePortFilter (e) {
+  store.setState(prevState => ({
+    menu: {
+      ...prevState.menu,
+      ports: {
+        ...prevState.menu.ports,
+        filter: e.target.value
+      }
+    }
+  }))
+  getPorts()
+    .then(() => {
+      renderPorts()
+    })
+}
+
 export {
   canvas,
   ctx,
   getPorts,
   renderPorts,
   setPortsTooltip,
-  togglePortsMenu
+  togglePortsMenu,
+  updatePortFilter
 }

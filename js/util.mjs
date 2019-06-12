@@ -11,6 +11,10 @@ function sizeCanvas(canvas) {
   return canvas
 }
 
+function clearCanvas(canvas, context) {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 class FPS {
   constructor() {
     this.history = []
@@ -48,5 +52,6 @@ export {
   DPR,
   FPS,
   setMouseState,
-  sizeCanvas
+  sizeCanvas,
+  clearCanvas
 }

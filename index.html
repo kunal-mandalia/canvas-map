@@ -135,7 +135,8 @@
       getPorts,
       renderPorts,
       setPortsTooltip,
-      togglePortsMenu
+      togglePortsMenu,
+      updatePortFilter
     } from './js/ports-layer.mjs'
     import { store } from './js/store.mjs'
 
@@ -143,11 +144,14 @@
 
     const menuPorts = document.getElementById('menu-ports')
     const menuBackButtons = document.getElementsByClassName('menu-item-back')
+    const menuPortsSearch = document.getElementById('input-port-filter')
 
     menuPorts.onclick = togglePortsMenu
     for (let i = 0; i < menuBackButtons.length; i++) {
       menuBackButtons[i].onclick = togglePortsMenu
     }
+
+    menuPortsSearch.oninput = updatePortFilter
 
     window.onmousemove = function (e) {
       setMouseState(e)
