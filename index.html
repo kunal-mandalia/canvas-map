@@ -1,68 +1,119 @@
 <!DOCTYPE html>
 <html>
-<style>
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
-    background: #191919 !important;
-  }
 
-  canvas {
-    position: absolute;
-  }
+<head>
+  <title>Canvas Map</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: #191919 !important;
+    }
 
-  #map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: black;
-    z-index: -1;
-    width: 100%;
-  }
+    canvas {
+      position: absolute;
+    }
 
-  #sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #808080c7;
-    width: 250px;
-    padding: 20px;
-    display: none;
-  }
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: black;
+      z-index: -1;
+      width: 100%;
+    }
 
-  #tooltip {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: rgba(255, 255, 255, 0.80);
-    min-width: 150px;
-    padding: 20px;
-    z-index: 5;
-    display: none;
-  }
+    #menu {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      width: 30px;
+      height: 30px;
+      z-index: 6;
+      flex-direction: column;
+      display: flex;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 8px;
+    }
 
-  #fps-monitor {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: grey;
-    width: 125px;
-    padding: 20px;
-  }
+    .button {
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+    .button:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
 
-  #base {
-    z-index: 1;
-  }
-  #ports {
-    z-index: 2;
-  }
-</style>
-<link rel="stylesheet" href="/assets/spectre.min.css">
+    #sidebar-ports {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      background-color: rgba(255, 255, 255, 0.8);
+      width: 250px;
+      padding: 20px;
+      height: 450px;
+      z-index: 6;
+      display: none;
+    }
+    #sidebar-ports input {
+      width: 100%;
+    }
+
+    #tooltip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgba(255, 255, 255, 0.90);
+      min-width: 150px;
+      padding: 20px;
+      z-index: 5;
+      display: none;
+    }
+
+    #fps-monitor {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: grey;
+      width: 125px;
+      padding: 20px;
+    }
+
+    #base {
+      z-index: 1;
+    }
+
+    #ports {
+      z-index: 2;
+    }
+
+    .sidebar-item .heading {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .sidebar-item .heading .title {
+      font-size: x-large;
+      margin-left: 0.5rem;
+    }
+  </style>
+  <link rel="stylesheet" href="/assets/spectre.min.css">
+</head>
+
 <body>
   <div id="app">
-    <div id="sidebar">
-      <h3>Filter ports</h3>
-      <input id="input-port-filter" type="text" placeholder="port name..."></input>
+    <div id="menu">
+      <div class="menu-item button" id="menu-ports">P</div>
+      <div class="menu-item button" id="menu-vessels">V</div>
+    </div>
+    <div id="sidebar-ports" class="sidebar-item">
+      <div class="heading"><div class="menu-item button menu-item-back"> < </div><span class="title">Ports</span></div>
+      <input id="input-port-filter" type="text" placeholder="Filter port by name..." tabindex="-1" autofocus></input>
     </div>
     <div id="tooltip">
       <div id="tooltip-title"></div>
@@ -77,24 +128,41 @@
   <script src="/js/ports-layer.mjs" type="module"></script>
   <script src="/js/store.mjs" type="module"></script>
   <script type="module">
-      import { dpr, sizeCanvas, setMouseState } from './js/util.mjs'
-      import { canvas as baseCanvas } from './js/base-layer.mjs'
-      import { canvas as portCanvas, getPorts, renderPorts, setPortsTooltip } from './js/ports-layer.mjs'
-      import { store } from './js/store.mjs'
+    import { sizeCanvas, setMouseState } from './js/util.mjs'
+    import { canvas as baseCanvas } from './js/base-layer.mjs'
+    import {
+      canvas as portCanvas,
+      getPorts,
+      renderPorts,
+      setPortsTooltip,
+      togglePortsMenu,
+      updatePortFilter
+    } from './js/ports-layer.mjs'
+    import { store } from './js/store.mjs'
 
-      [baseCanvas,portCanvas].forEach(sizeCanvas)
-     
-      window.onmousemove = function(e) {
-        setMouseState(e)
-        setPortsTooltip()
-      }
+    [baseCanvas, portCanvas].forEach(sizeCanvas)
 
-      getPorts()
-        .then(_ => {
-          const { ports: { instances } } = store.getState()
-          renderPorts(instances)
-        })
-  
+    const menuPorts = document.getElementById('menu-ports')
+    const menuBackButtons = document.getElementsByClassName('menu-item-back')
+    const menuPortsSearch = document.getElementById('input-port-filter')
+
+    menuPorts.onclick = togglePortsMenu
+    for (let i = 0; i < menuBackButtons.length; i++) {
+      menuBackButtons[i].onclick = togglePortsMenu
+    }
+
+    menuPortsSearch.oninput = updatePortFilter
+
+    window.onmousemove = function (e) {
+      setMouseState(e)
+      setPortsTooltip()
+    }
+
+    getPorts()
+      .then(_ => {
+        const { ports: { instances } } = store.getState()
+        renderPorts(instances)
+      })
   </script>
 </body>
 

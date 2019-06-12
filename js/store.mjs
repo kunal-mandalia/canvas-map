@@ -1,4 +1,10 @@
-let data = {}
+let data = {
+  menu: {
+    ports: {
+      isExpanded: false
+    }
+  }
+}
 
 const store = {
   getState: () => data,
