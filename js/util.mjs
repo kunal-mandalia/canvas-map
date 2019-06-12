@@ -48,10 +48,44 @@ function setMouseState(e) {
   })
 }
 
+function Debounce (ms = 100) {
+  this.ms = ms
+  this.lastCall = null
+  this.idle = true
+
+  this.throttle = fn => {
+    this.lastCall = {
+      fn,
+      ts: Date.now()
+    }
+    if (this.idle) {
+      this.wait()
+    }
+  }
+
+  this.wait = () => {
+    this.idle = false
+    setTimeout(() => {
+      if (this.lastCall) {
+        if (Date.now() - this.lastCall.ts > ms) {
+          this.lastCall.fn()
+          this.lastCall = null
+        } else {
+          this.wait()
+        }
+      }
+      this.idle = true
+    }, this.ms)
+  }
+}
+const debounce = new Debounce()
+
 export {
   DPR,
   FPS,
   setMouseState,
   sizeCanvas,
-  clearCanvas
+  clearCanvas,
+  Debounce,
+  debounce
 }
