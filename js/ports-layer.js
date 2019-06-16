@@ -1,6 +1,6 @@
-import { store } from './store.mjs'
-import { FPS, clearCanvas } from './util.mjs'
-import { DPR, RATIO } from './constants.mjs'
+import { store } from './store.js'
+import { FPS, clearCanvas, sizeCanvas } from './util.js'
+import { DPR, RATIO } from './constants.js'
 
 const fps = new FPS()
 
@@ -137,7 +137,7 @@ function togglePortsMenu() {
     } else {
       menu.style.display = 'none'
       ports.style.display = 'block'
-      ports.style.height = `${(window.innerWidth / 2) - 50}px`
+      sizeSidebarPorts()
     }
     
     return {
@@ -165,7 +165,40 @@ function updatePortFilter (e) {
   getPorts()
     .then(() => {
       renderPorts()
-    })
+
+      const portList = document.getElementById('port-list')
+      const portListInnerHtml = store.getState().ports.instances.reduce((portListInnerHtml, port) => {
+        portListInnerHtml += `<p class="port-list-item">${port.name}</p>`
+        return portListInnerHtml
+      }, "")
+      portList.innerHTML = portListInnerHtml
+      sizePortList()
+  });
+}
+
+function sizeSidebarPorts () {
+  const ports = document.getElementById('sidebar-ports')
+  ports.style.height = `${(window.innerWidth / 2) - 50}px`
+}
+
+function sizePortList () {
+  const sidebarPorts = document.getElementById('sidebar-ports')
+  const portList = document.getElementById('port-list')
+
+  const height = sidebarPorts.clientHeight - 125
+  portList.style.height = `${height}px`
+}
+
+function handleResize () {
+  sizeCanvas(canvas)
+  sizeSidebarPorts()
+  sizePortList()
+}
+
+
+function init () {
+  sizeCanvas(canvas)
+  sizePortList()
 }
 
 export {
@@ -175,5 +208,8 @@ export {
   renderPorts,
   setPortsTooltip,
   togglePortsMenu,
-  updatePortFilter
+  updatePortFilter,
+  sizePortList,
+  init,
+  handleResize
 }

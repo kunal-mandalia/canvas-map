@@ -33,6 +33,7 @@
       flex-direction: column;
       display: flex;
     }
+
     .menu-item {
       display: flex;
       align-items: center;
@@ -45,6 +46,7 @@
       cursor: pointer;
       background-color: rgba(255, 255, 255, 0.8);
     }
+
     .button:hover {
       background-color: rgba(255, 255, 255, 0.9);
     }
@@ -60,6 +62,7 @@
       z-index: 6;
       display: none;
     }
+
     #sidebar-ports input {
       width: 100%;
     }
@@ -97,10 +100,20 @@
       align-items: center;
       margin-bottom: 1rem;
     }
+
     .sidebar-item .heading .title {
       font-size: x-large;
       margin-left: 0.5rem;
     }
+
+    #port-list {
+      margin: 12px 0;
+      overflow: scroll;
+    }
+    .port-list-item {
+      border-bottom: solid 1px rgb(194, 194, 194);
+    }
+
   </style>
   <link rel="stylesheet" href="/assets/spectre.min.css">
 </head>
@@ -112,69 +125,74 @@
       <div class="menu-item button" id="menu-vessels">V</div>
     </div>
     <div id="sidebar-ports" class="sidebar-item">
-      <div class="heading"><div class="menu-item button menu-item-back"> < </div><span class="title">Ports</span></div>
-      <input id="input-port-filter" type="text" placeholder="Filter port by name..." tabindex="-1" autofocus></input>
+      <div class="heading">
+        <div class="menu-item button menu-item-back">
+          < </div> <span class="title">Ports</span>
+        </div>
+        <input id="input-port-filter" type="text" placeholder="Filter port by name..." tabindex="-1" autofocus></input>
+        <div id="port-list"></div>
+      </div>
+      <div id="tooltip">
+        <div id="tooltip-title"></div>
+        <div id="tooltip-body"></div>
+      </div>
+      <img id="map" src="/assets/map.svg"></img>
+      <canvas id="ports-layer"></canvas>
+      <div id="fps-monitor">FPS <span id="fps-value">0</span></div>
     </div>
-    <div id="tooltip">
-      <div id="tooltip-title"></div>
-      <div id="tooltip-body"></div>
-    </div>
-    <img id="map" src="/assets/map.svg"></img>
-    <canvas id="base-layer"></canvas>
-    <canvas id="ports-layer"></canvas>
-    <div id="fps-monitor">FPS <span id="fps-value">0</span></div>
-  </div>
 
-  <script src="/js/ports-layer.mjs" type="module"></script>
-  <script src="/js/store.mjs" type="module"></script>
-  <script type="module">
-    import { sizeCanvas, setMouseState, debounce } from './js/util.mjs'
-    import { canvas as baseCanvas } from './js/base-layer.mjs'
-    import {
-      canvas as portCanvas,
-      getPorts,
-      renderPorts,
-      setPortsTooltip,
-      togglePortsMenu,
-      updatePortFilter
-    } from './js/ports-layer.mjs'
-    import { store } from './js/store.mjs'
+    <script src="/js/ports-layer.js" type="module"></script>
+    <script src="/js/store.js" type="module"></script>
+    <script type="module">
+      import { sizeCanvas, setMouseState, debounce } from './js/util.js'
+      import {
+        canvas as portCanvas,
+        getPorts,
+        renderPorts,
+        setPortsTooltip,
+        togglePortsMenu,
+        updatePortFilter,
+        sizePortList,
+        init as initialisePortLayer,
+        handleResize as handlePortsLayerResize
+      } from './js/ports-layer.js'
+      import { store } from './js/store.js'
 
-    [baseCanvas, portCanvas].forEach(sizeCanvas)
+      initialisePortLayer()
 
-    const menuPorts = document.getElementById('menu-ports')
-    const menuBackButtons = document.getElementsByClassName('menu-item-back')
-    const menuPortsSearch = document.getElementById('input-port-filter')
+      const menuPorts = document.getElementById('menu-ports')
+      const menuBackButtons = document.getElementsByClassName('menu-item-back')
+      const menuPortsSearch = document.getElementById('input-port-filter')
 
-    menuPorts.onclick = togglePortsMenu
-    for (let i = 0; i < menuBackButtons.length; i++) {
-      menuBackButtons[i].onclick = togglePortsMenu
-    }
+      menuPorts.onclick = togglePortsMenu
+      for (let i = 0; i < menuBackButtons.length; i++) {
+        menuBackButtons[i].onclick = togglePortsMenu
+      }
 
-    menuPortsSearch.oninput = updatePortFilter
+      menuPortsSearch.oninput = updatePortFilter
 
-    window.onresize = function(e) {
-      debounce.throttle(() => {
-        sizeCanvas(portCanvas)
-        getPorts()
+      window.onresize = function (e) {
+        debounce.throttle(() => {
+          handlePortsLayerResize()
+          getPorts()
+            .then(_ => {
+              const { ports: { instances } } = store.getState()
+              renderPorts(instances)
+            })
+        })
+      }
+
+      window.onmousemove = function (e) {
+        setMouseState(e)
+        setPortsTooltip()
+      }
+
+      getPorts()
         .then(_ => {
           const { ports: { instances } } = store.getState()
           renderPorts(instances)
         })
-      })
-    }
-
-    window.onmousemove = function (e) {
-      setMouseState(e)
-      setPortsTooltip()
-    }
-
-    getPorts()
-      .then(_ => {
-        const { ports: { instances } } = store.getState()
-        renderPorts(instances)
-      })
-  </script>
+    </script>
 </body>
 
 </html>
