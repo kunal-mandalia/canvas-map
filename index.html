@@ -142,56 +142,35 @@
     </div>
 
     <script src="/js/ports-layer.js" type="module"></script>
-    <script src="/js/store.js" type="module"></script>
     <script type="module">
-      import { sizeCanvas, setMouseState, debounce } from './js/util.js'
+      import { setMouseState, debounce } from './js/util.js'
       import {
-        canvas as portCanvas,
-        getPorts,
-        renderPorts,
-        setPortsTooltip,
-        togglePortsMenu,
-        updatePortFilter,
-        sizePortList,
         init as initialisePortLayer,
-        handleResize as handlePortsLayerResize
+        handleResize as handlePortsLayerResize,
+        setPortsTooltip,
       } from './js/ports-layer.js'
-      import { store } from './js/store.js'
+      import {
+        init as initialiseMenus,
+        handleResize as handleMenuResize,
+        toggleSidebar,
+      } from './js/menu.js'
 
-      initialisePortLayer()
+      window.addEventListener('load', () => {
+        initialisePortLayer()
+        initialiseMenus()
 
-      const menuPorts = document.getElementById('menu-ports')
-      const menuBackButtons = document.getElementsByClassName('menu-item-back')
-      const menuPortsSearch = document.getElementById('input-port-filter')
-
-      menuPorts.onclick = togglePortsMenu
-      for (let i = 0; i < menuBackButtons.length; i++) {
-        menuBackButtons[i].onclick = togglePortsMenu
-      }
-
-      menuPortsSearch.oninput = updatePortFilter
-
-      window.onresize = function (e) {
-        debounce.throttle(() => {
-          handlePortsLayerResize()
-          getPorts()
-            .then(_ => {
-              const { ports: { instances } } = store.getState()
-              renderPorts(instances)
-            })
-        })
-      }
-
-      window.onmousemove = function (e) {
-        setMouseState(e)
-        setPortsTooltip()
-      }
-
-      getPorts()
-        .then(_ => {
-          const { ports: { instances } } = store.getState()
-          renderPorts(instances)
-        })
+        window.onresize = function (e) {
+          debounce.throttle(() => {
+            handlePortsLayerResize()
+            handleMenuResize()
+          })
+        }
+  
+        window.onmousemove = function (e) {
+          setMouseState(e)
+          setPortsTooltip()
+        }
+      })
     </script>
 </body>
 
