@@ -15,6 +15,29 @@ function init () {
   menuPortsSearch.oninput = updatePortFilter
 }
 
+function createPortListItem(port) {
+  const portListItem = document.createElement('p') 
+  const newContent = document.createTextNode(port.name)
+  portListItem.appendChild(newContent)
+  portListItem.className = 'port-list-item'
+  portListItem.onclick = handlePortListItemClick
+  portListItem.dataset.name = port.name
+  return portListItem
+}
+
+function refreshPortList() {
+  // remove previous ports
+  const portList = document.getElementById('port-list')
+  while (portList.firstChild) {
+    portList.removeChild(portList.firstChild)
+  }
+  // create new ports
+  store.getState().ports.instances.forEach(port => {
+    const node = createPortListItem(port)
+    portList.appendChild(node)
+  })
+}
+
 function updatePortFilter (e) {
   store.setState(prevState => ({
     menu: {
@@ -28,14 +51,12 @@ function updatePortFilter (e) {
   getPorts()
     .then(() => {
       renderPorts()
-
-      const portList = document.getElementById('port-list')
-      const portListInnerHtml = store.getState().ports.instances.reduce((portListInnerHtml, port) => {
-        portListInnerHtml += `<p class="port-list-item">${port.name}</p>`
-        return portListInnerHtml
-      }, "")
-      portList.innerHTML = portListInnerHtml
+      refreshPortList()
   });
+}
+
+function handlePortListItemClick() {
+  console.log("handlePortListItemClick clicked", this)
 }
 
 function toggleSidebar(name) {
