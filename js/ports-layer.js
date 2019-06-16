@@ -125,80 +125,23 @@ function setPortsTooltip() {
   }
 }
 
-function togglePortsMenu() {
-  store.setState(prevState => {
-    const isExpanded = prevState.menu.ports.isExpanded
-    const menu = document.getElementById('menu')
-    const ports = document.getElementById('sidebar-ports')
-
-    if (isExpanded) {
-      menu.style.display = 'block'
-      ports.style.display = 'none'
-    } else {
-      menu.style.display = 'none'
-      ports.style.display = 'block'
-      sizeSidebarPorts()
-    }
-    
-    return {
-      menu: {
-        ...prevState.menu,
-        ports: {
-          ...prevState.menu.ports,
-          isExpanded: !isExpanded
-        }
-      }
-    }
-  })
-}
-
-function updatePortFilter (e) {
-  store.setState(prevState => ({
-    menu: {
-      ...prevState.menu,
-      ports: {
-        ...prevState.menu.ports,
-        filter: e.target.value
-      }
-    }
-  }))
-  getPorts()
-    .then(() => {
-      renderPorts()
-
-      const portList = document.getElementById('port-list')
-      const portListInnerHtml = store.getState().ports.instances.reduce((portListInnerHtml, port) => {
-        portListInnerHtml += `<p class="port-list-item">${port.name}</p>`
-        return portListInnerHtml
-      }, "")
-      portList.innerHTML = portListInnerHtml
-      sizePortList()
-  });
-}
-
-function sizeSidebarPorts () {
-  const ports = document.getElementById('sidebar-ports')
-  ports.style.height = `${(window.innerWidth / 2) - 50}px`
-}
-
-function sizePortList () {
-  const sidebarPorts = document.getElementById('sidebar-ports')
-  const portList = document.getElementById('port-list')
-
-  const height = sidebarPorts.clientHeight - 125
-  portList.style.height = `${height}px`
-}
-
 function handleResize () {
   sizeCanvas(canvas)
-  sizeSidebarPorts()
-  sizePortList()
+  getPorts()
+    .then(_ => {
+      const { ports: { instances } } = store.getState()
+      renderPorts(instances)
+    })
 }
 
 
 function init () {
   sizeCanvas(canvas)
-  sizePortList()
+  getPorts()
+    .then(_ => {
+      const { ports: { instances } } = store.getState()
+      renderPorts(instances)
+    })
 }
 
 export {
@@ -207,9 +150,6 @@ export {
   getPorts,
   renderPorts,
   setPortsTooltip,
-  togglePortsMenu,
-  updatePortFilter,
-  sizePortList,
   init,
   handleResize
 }
