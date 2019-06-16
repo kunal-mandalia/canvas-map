@@ -1,5 +1,5 @@
-import { store } from './store.mjs'
-import { DPR, RATIO } from './constants.mjs'
+import { store } from './store.js'
+import { DPR, RATIO } from './constants.js'
 
 function sizeCanvas(canvas) {
   canvas.style.width = `${window.innerWidth}px`
